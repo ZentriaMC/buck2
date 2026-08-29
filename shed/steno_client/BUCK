@@ -1,0 +1,20 @@
+load("@fbcode//buck2:proto_defs.bzl", "rust_protobuf_library")
+
+oncall("build_infra")
+
+# Zentria: replaces the internal scribe_client; buck2_events depends on it as `scribe_client`.
+rust_protobuf_library(
+    name = "steno_client",
+    srcs = glob(["src/**/*.rs"]),
+    build_script = "build.rs",
+    # The shim drops named_deps, so the crate carries the name buck2_events imports.
+    crate_name = "scribe_client",
+    protos = ["steno.proto"],
+    deps = [
+        "fbsource//third-party/rust:anyhow",
+        "fbsource//third-party/rust:crossbeam",
+        "fbsource//third-party/rust:tokio",
+        "fbsource//third-party/rust:tracing",
+        "//common/rust/shed/fbinit:fbinit",
+    ],
+)

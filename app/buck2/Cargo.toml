@@ -221,3 +221,7 @@ unused_variables = { level = "warn" }
 
 [lints.rustdoc]
 private_intra_doc_links = { level = "allow" }
+
+[features]
+default = ["steno"]
+steno = ["buck2_events/steno"]

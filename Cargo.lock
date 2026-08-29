@@ -1533,6 +1533,7 @@ dependencies = [
  "buck2_data",
  "buck2_error",
  "buck2_event_log",
+ "buck2_events",
  "buck2_fs",
  "buck2_hash",
  "buck2_query_parser",
@@ -2501,6 +2502,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smallvec",
+ "steno_client",
  "sys-info",
  "tokio",
  "uuid",
@@ -10625,6 +10627,21 @@ dependencies = [
  "equivalent",
  "lock_free_hashtable",
  "strong_hash",
+]
+
+[[package]]
+name = "steno_client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "buck2_protoc_dev",
+ "crossbeam",
+ "fbinit",
+ "prost",
+ "tokio",
+ "tonic",
+ "tonic-prost",
+ "tracing",
 ]
 
 [[package]]

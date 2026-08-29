@@ -407,7 +407,9 @@ pub(crate) fn print_buck_ui(
     used_superconsole: bool,
 ) -> buck2_error::Result<()> {
     if used_superconsole {
-        if cfg!(fbcode_build) {
+        if let Some(url) = buck2_events::sink::remote::build_ui_url(&ctx.trace_id.to_string()) {
+            console.print_stderr(&format!("Buck UI: {}", url))?;
+        } else if cfg!(fbcode_build) {
             console.print_stderr(&format!(
                 "Buck UI: https://www.internalfb.com/buck2/{}",
                 ctx.trace_id

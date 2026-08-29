@@ -28,6 +28,7 @@ hostname.workspace = true
 is_proc_translated.workspace = true
 pin-project.workspace = true
 prost.workspace = true
+scribe_client = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true
 smallvec.workspace = true
@@ -42,6 +43,10 @@ sys-info.workspace = true
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winver.workspace = true
+
+[features]
+# Ship events to a steno server (Zentria). Off: identical to the stock open source build.
+steno = ["dep:scribe_client"]
 
 [lints]
 workspace = true

@@ -7,3 +7,4 @@
 # above-listed licenses.
 
 buildscript.run = false
+env = { CARGO_PKG_VERSION = "0.6.5" }

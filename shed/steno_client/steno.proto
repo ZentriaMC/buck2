@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+// The write side of steno, Zentria's event store for buck2 invocations.
+//
+// Deliberately shaped like Meta's Scribe producer API: buck2's event sink
+// encodes, keys and offers messages, and knows nothing about what happens to
+// them. The server decodes `buck.data.BuckEvent` payloads itself.
+package zentria.steno.v1;
+
+service Steno {
+  rpc WriteMessages(WriteMessagesRequest) returns (WriteMessagesResponse);
+}
+
+message Message {
+  // Stream name. buck2 sends "buck2_events".
+  string category = 1;
+  // Opaque payload; for "buck2_events" an encoded buck.data.BuckEvent.
+  bytes payload = 2;
+  // Partition key. buck2 uses the hashed trace id so one invocation stays together.
+  optional int64 message_key = 3;
+}
+
+message WriteMessagesRequest {
+  repeated Message messages = 1;
+}
+
+enum WriteResult {
+  WRITE_RESULT_UNSPECIFIED = 0;
+  WRITE_RESULT_OK = 1;
+  // Retryable.
+  WRITE_RESULT_TRY_LATER = 2;
+  // Malformed. Never retried.
+  WRITE_RESULT_INVALID = 3;
+  // Never retried.
+  WRITE_RESULT_UNAUTHORIZED = 4;
+  // Retryable.
+  WRITE_RESULT_RATE_LIMITED = 5;
+  // Retryable.
+  WRITE_RESULT_INTERNAL = 6;
+}
+
+message WriteMessagesResponse {
+  // One entry per request message, in request order.
+  repeated WriteResult results = 1;
+}
