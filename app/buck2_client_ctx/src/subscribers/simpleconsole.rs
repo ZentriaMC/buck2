@@ -491,7 +491,10 @@ where
         _command: &buck2_data::CommandStart,
         event: &BuckEvent,
     ) -> buck2_error::Result<()> {
-        if cfg!(fbcode_build) {
+        if let Some(url) = buck2_events::sink::remote::build_ui_url(&event.trace_id()?.to_string())
+        {
+            echo!("Buck UI: {}", url)?;
+        } else if cfg!(fbcode_build) {
             echo!(
                 "Buck UI: https://www.internalfb.com/buck2/{}",
                 event.trace_id()?

@@ -14,7 +14,7 @@ use std::sync::atomic::Ordering;
 
 use fbinit::FacebookInit;
 
-#[cfg(fbcode_build)]
+#[cfg(any(fbcode_build, feature = "steno"))]
 mod fbcode {
     pub use scribe_client::ScribeConfig;
 
@@ -22,7 +22,7 @@ mod fbcode {
     pub(crate) use crate::sink::scribe::scribe_category;
 }
 
-#[cfg(not(fbcode_build))]
+#[cfg(not(any(fbcode_build, feature = "steno")))]
 mod fbcode {
     use std::sync::Arc;
     use std::time::Duration;
@@ -81,10 +81,37 @@ fn new_remote_event_sink_if_fbcode(
     {
         Ok(Some(RemoteEventSink::new(fb, scribe_category()?, config)?))
     }
-    #[cfg(not(fbcode_build))]
+    #[cfg(all(not(fbcode_build), feature = "steno"))]
+    {
+        // Opt-in per environment. Unset means stock behaviour; an error here
+        // would fail daemon startup, so absence is `None`, not `Err`.
+        if buck2_core::buck2_env!("BUCK2_STENO_URL")?.is_none() {
+            return Ok(None);
+        }
+        Ok(Some(RemoteEventSink::new(fb, scribe_category()?, config)?))
+    }
+    #[cfg(not(any(fbcode_build, feature = "steno")))]
     {
         let _ = (fb, config);
         Ok(None)
+    }
+}
+
+/// Where a person can look at this invocation, when events are shipped
+/// somewhere with a UI. `BUCK2_STENO_UI_URL` is the base; the run page is
+/// `<base>/runs/<trace id>`.
+pub fn build_ui_url(trace_id: &str) -> Option<String> {
+    #[cfg(feature = "steno")]
+    {
+        let base = buck2_core::buck2_env!("BUCK2_STENO_UI_URL")
+            .ok()
+            .flatten()?;
+        Some(format!("{}/runs/{}", base.trim_end_matches('/'), trace_id))
+    }
+    #[cfg(not(feature = "steno"))]
+    {
+        let _ = trace_id;
+        None
     }
 }
 

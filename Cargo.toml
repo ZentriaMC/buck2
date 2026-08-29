@@ -193,6 +193,7 @@ members = [
   "shed/provider",
   "shed/setsketch",
   "shed/static_interner",
+  "shed/steno_client",
   "shed/three_billion_instructions",
   "starlark-rust/starlark",
   "starlark-rust/starlark_bin",
@@ -427,6 +428,8 @@ memmap2 = "0.9.11"
 mimalloc = { version = "0.1.52", default-features = false }
 mini_map = { path = "shed/mini_map", features = ["pagable_dep"] }
 mini_vec = { path = "shed/mini_vec" }
+# steno_client is a drop-in for the internal scribe_client; the alias keeps `sink/scribe.rs` diff-free.
+scribe_client = { package = "steno_client", path = "shed/steno_client" }
 multimap = "0.10.1"
 nix = { version = "0.31.3", features = ["dir", "event", "hostname", "inotify", "ioctl", "mman", "mount", "net", "poll", "ptrace", "reboot", "resource", "sched", "signal", "term", "time", "user", "zerocopy"] }
 nom = "8"

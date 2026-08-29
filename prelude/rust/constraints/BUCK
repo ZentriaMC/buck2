@@ -1,0 +1,41 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+#
+# This source code is licensed under both the MIT license found in the
+# LICENSE-MIT file in the root directory of this source tree and the Apache
+# License, Version 2.0 found in the LICENSE-APACHE file in the root directory
+# of this source tree.
+
+load("@prelude//configurations:constraint_alias.bzl", "constraint_with_aliases")
+load("@prelude//utils:source_listing.bzl", "source_listing")
+
+oncall("build_infra")
+
+source_listing()
+
+# rustc's `-C opt-level`, as configuration. `system_rust_toolchain` selects its
+# default `rustc_flags` on this; `unspecified` leaves rustc at its own default
+# (opt-level 0). Set it per build with `?prelude//rust/constraints:opt_level[3]`,
+# per project with `set_cfg_modifiers` in a PACKAGE file, or from buckconfig
+# through buckconfig-backed modifiers.
+constraint_with_aliases(
+    name = "opt_level",
+    aliases = {
+        "opt_level_0": "0",
+        "opt_level_1": "1",
+        "opt_level_2": "2",
+        "opt_level_3": "3",
+        "opt_level_s": "s",
+        "opt_level_z": "z",
+    },
+    default = "unspecified",
+    values = [
+        "unspecified",
+        "0",
+        "1",
+        "2",
+        "3",
+        "s",
+        "z",
+    ],
+    visibility = ["PUBLIC"],
+)

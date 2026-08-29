@@ -69,6 +69,20 @@ def _rustc_flags_arg():
     The set of additional compiler flags to pass to `rustc`.
 """,
         ),
+        "_rustc_opt_level_flags": attrs.default_only(
+            attrs.list(
+                attrs.arg(),
+                default = select({
+                    "DEFAULT": [],
+                    "prelude//rust/constraints:opt_level[0]": ["-Copt-level=0"],
+                    "prelude//rust/constraints:opt_level[1]": ["-Copt-level=1"],
+                    "prelude//rust/constraints:opt_level[2]": ["-Copt-level=2"],
+                    "prelude//rust/constraints:opt_level[3]": ["-Copt-level=3"],
+                    "prelude//rust/constraints:opt_level[s]": ["-Copt-level=s"],
+                    "prelude//rust/constraints:opt_level[z]": ["-Copt-level=z"],
+                }),
+            )
+        ),
     }
 
 def _miri_flags_arg():

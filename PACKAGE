@@ -1,0 +1,7 @@
+# Zentria: enable configuration modifiers (`target?prelude//...:constraint[value]`) for the buck2 repo itself.
+# The shim's PACKAGE only installs the constructor when the shim is the project root.
+load("@gh_facebook_buck2_shims_meta//:cfg.bzl", "SHIM_ALIASES", "get_shim_modifiers", "set_cfg_constructor")
+load("@prelude//cfg/modifier:set_cfg_modifiers.bzl", "set_cfg_modifiers")
+
+set_cfg_constructor(SHIM_ALIASES)
+set_cfg_modifiers(get_shim_modifiers())

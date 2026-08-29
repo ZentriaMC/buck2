@@ -1580,6 +1580,7 @@ def _compute_common_args(
         _rustc_flags(toolchain_info.rustc_proc_macro_flags, toolchain_info)
         if _host_agnostic_proc_macro(crate_type, emit, is_rustdoc_test, incremental_enabled)
         else [],
+        _rustc_flags(getattr(ctx.attrs, "_rustc_opt_level_flags", []), toolchain_info),
         # `rustc_check_flags` is specifically interpreted as flags that are used
         # only on the metadata-fast graph.
         _rustc_flags(toolchain_info.rustc_check_flags, toolchain_info) if dep_metadata_kind == MetadataKind("fast") else [],

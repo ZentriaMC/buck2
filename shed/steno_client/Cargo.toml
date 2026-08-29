@@ -1,0 +1,23 @@
+[package]
+name = "steno_client"
+version.workspace = true
+edition.workspace = true
+repository = "https://github.com/ZentriaMC/buck2"
+license.workspace = true
+description = "Ships buck2 events to a steno server. Same API as the internal scribe_client so the event sink is unchanged."
+
+[dependencies]
+anyhow.workspace = true
+crossbeam.workspace = true
+fbinit.workspace = true
+prost.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tonic-prost.workspace = true
+tracing.workspace = true
+
+[build-dependencies]
+buck2_protoc_dev.workspace = true
+
+[lints]
+workspace = true

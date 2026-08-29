@@ -177,6 +177,11 @@ impl RemoteEventSink {
     fn should_send_event(&self, data: &buck2_data::buck_event::Data) -> bool {
         use buck2_data::buck_event::Data;
 
+        // steno stores the complete stream and reconstructs event logs from it.
+        if cfg!(feature = "steno") {
+            return true;
+        }
+
         match data {
             Data::SpanStart(s) => {
                 use buck2_data::span_start_event::Data;

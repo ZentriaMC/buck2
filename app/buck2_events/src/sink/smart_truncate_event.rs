@@ -10,8 +10,9 @@
 
 fn truncate(s: &str, max_bytes: usize) -> String {
     // Scuba has a tendency to OOM on queries if we ever report very long strings, so truncate them
-    // to a reasonable length unconditionally
-    const MAX_STRING_BYTES: usize = 20 * 1024;
+    // to a reasonable length unconditionally. steno stores strings compressed in ClickHouse and
+    // wants whole compiler and test output; the 1 MiB message guard still bounds an event.
+    const MAX_STRING_BYTES: usize = if cfg!(feature = "steno") { 512 * 1024 } else { 20 * 1024 };
 
     buck2_util::truncate::truncate(s, max_bytes.min(MAX_STRING_BYTES))
 }
@@ -118,8 +119,12 @@ fn truncate_action_execution_end(action_execution_end: &mut buck2_data::ActionEx
             truncate_cmd(retried, false);
         }
         // Current Scribe tailers don't read stderr of successful actions.
-        // Save some bytes.
-        truncate_cmd(last_command, !action_execution_end.failed);
+        // Save some bytes. steno keeps it (within the budget): warnings from
+        // successful compiles are exactly what a run page should show.
+        truncate_cmd(
+            last_command,
+            !action_execution_end.failed && !cfg!(feature = "steno"),
+        );
     }
 }
 
@@ -181,13 +186,20 @@ fn truncate_test_end(test_end: &mut buck2_data::TestRunEnd) {
     }
 
     // Scribe tailer logs neither stdout nor stderr of tests, so don't send these.
+    // steno does: deprecation warnings and flaky-test output are what it is for.
     if let Some(ref mut command_report) = test_end.command_report {
         if let Some(ref mut details) = command_report.details {
-            if !details.cmd_stdout.is_empty() {
-                details.cmd_stdout = "<<omitted>>".to_owned();
-            }
-            if !details.cmd_stderr.is_empty() {
-                details.cmd_stderr = "<<omitted>>".to_owned();
+            if cfg!(feature = "steno") {
+                const TEST_OUTPUT_BUDGET: usize = 500 * 1024;
+                details.cmd_stdout = truncate(&console::strip_ansi_codes(&details.cmd_stdout), TEST_OUTPUT_BUDGET);
+                details.cmd_stderr = truncate(&console::strip_ansi_codes(&details.cmd_stderr), TEST_OUTPUT_BUDGET);
+            } else {
+                if !details.cmd_stdout.is_empty() {
+                    details.cmd_stdout = "<<omitted>>".to_owned();
+                }
+                if !details.cmd_stderr.is_empty() {
+                    details.cmd_stderr = "<<omitted>>".to_owned();
+                }
             }
         }
     }
