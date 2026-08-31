@@ -218,6 +218,19 @@ impl CommandExecutor {
                     name: "persistentWorkerKey".to_owned(),
                     value: key.to_string(),
                 });
+                // NativeLink's executor takes the persistent-worker path from the Bazel
+                // conventions, not from persistentWorkerKey: `supports-workers` marks the
+                // action, `requires-worker-protocol` picks the wire format. Sent per action,
+                // exactly when a worker is attached, so nothing else on the platform is
+                // affected.
+                platform.properties.push(RE::Property {
+                    name: "supports-workers".to_owned(),
+                    value: "1".to_owned(),
+                });
+                platform.properties.push(RE::Property {
+                    name: "requires-worker-protocol".to_owned(),
+                    value: "proto".to_owned(),
+                });
                 // TODO[AH] Ideally, Buck2 could generate an argfile on the fly.
                 for arg in request.args() {
                     if !(arg.starts_with("@")
