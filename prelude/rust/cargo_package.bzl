@@ -14,6 +14,7 @@ These should not be used for first-party code where lints are desired.
 
 Nonempty platform maps restrict target compatibility. Generate complete maps with
 Reindeer's `buck.platform_compatibility_on_all_targets = true` setting.
+Proc macros compile for the execution platform and do not inherit this restriction.
 """
 
 load("@prelude//:prelude.bzl", "native")
@@ -119,7 +120,7 @@ def apply_platform_attrs(platform_attrs, universal_attrs, platform_select = None
         else:
             combined_attrs[attr] = conditional_value
 
-    if platform_attrs:
+    if platform_attrs and not universal_attrs.get("proc_macro", False):
         combined_attrs["target_compatible_with"] = combined_attrs.get("target_compatible_with", []) + selects.apply(
             platform_select,
             lambda platform: [] if platform in platform_attrs else ["prelude//:none"],
