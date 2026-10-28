@@ -51,6 +51,7 @@
           };
 
           cargoBuildFlags = [ "--bin" "buck2" ];
+          RUSTFLAGS = "--cfg=tokio_unstable";
           doCheck = false;
 
           nativeBuildInputs = [ pkgs.protobuf ];
