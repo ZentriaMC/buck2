@@ -25,6 +25,7 @@ buildscript_platform(name = "macos_for_linux", target = "linux-arm64")
 platform_probe(name = "linux_only", platform = {"linux-arm64": {}})
 platform_probe(name = "macos_only", platform = {"macos-arm64": {}})
 platform_probe(name = "empty")
+platform_probe(name = "linux_proc_macro", platform = {"linux-arm64": {}}, proc_macro = True)
 platform_probe(
     name = "universal_constraint",
     platform = {"linux-arm64": {}},

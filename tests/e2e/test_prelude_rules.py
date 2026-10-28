@@ -41,6 +41,7 @@ class PreludeRulesTest(BuckTestCase):
                     "linux_only",
                     "macos_only",
                     "empty",
+                    "linux_proc_macro",
                     "universal_constraint",
                     "platform_constraint",
                     "merged",
@@ -49,9 +50,9 @@ class PreludeRulesTest(BuckTestCase):
             + ")"
         )
         for platform, expected in (
-            ("linux", {"linux_only", "empty", "merged"}),
-            ("macos", {"macos_only", "empty", "merged"}),
-            ("unknown", {"empty"}),
+            ("linux", {"linux_only", "empty", "merged", "linux_proc_macro"}),
+            ("macos", {"macos_only", "empty", "merged", "linux_proc_macro"}),
+            ("unknown", {"empty", "linux_proc_macro"}),
         ):
             result = await buck.cquery(
                 targets,

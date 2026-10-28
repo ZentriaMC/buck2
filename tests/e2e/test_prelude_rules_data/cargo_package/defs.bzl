@@ -6,7 +6,10 @@ def _probe_impl(ctx):
 
 _probe = rule(
     impl = _probe_impl,
-    attrs = {"values": attrs.list(attrs.string(), default = [])},
+    attrs = {
+        "proc_macro": attrs.bool(default = False),
+        "values": attrs.list(attrs.string(), default = []),
+    },
 )
 
 def platform_probe(name, platform = {}, buildscript = False, **kwargs):
