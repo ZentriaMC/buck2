@@ -1,0 +1,54 @@
+load("@prelude//rust:cargo_buildscript.bzl", "buildscript_run")
+load("@prelude//rust:cargo_package.bzl", "cargo")
+load(":defs.bzl", "buildscript_platform", "platform_probe")
+
+platform(
+    name = "linux",
+    constraint_values = [
+        "prelude//os/constraints:os[linux]",
+        "prelude//cpu/constraints:cpu[arm64]",
+    ],
+)
+
+platform(
+    name = "macos",
+    constraint_values = [
+        "prelude//os/constraints:os[macos]",
+        "prelude//cpu/constraints:cpu[arm64]",
+    ],
+)
+
+platform(name = "unknown")
+
+buildscript_platform(name = "macos_for_linux", target = "linux-arm64")
+
+platform_probe(name = "linux_only", platform = {"linux-arm64": {}})
+platform_probe(name = "macos_only", platform = {"macos-arm64": {}})
+platform_probe(name = "empty")
+platform_probe(
+    name = "universal_constraint",
+    platform = {"linux-arm64": {}},
+    target_compatible_with = ["prelude//os/constraints:os[macos]"],
+)
+platform_probe(
+    name = "platform_constraint",
+    platform = {"linux-arm64": {"target_compatible_with": ["prelude//os/constraints:os[macos]"]}},
+)
+platform_probe(
+    name = "merged",
+    values = ["universal"],
+    platform = {"linux-arm64": {"values": ["linux"]}, "macos-arm64": {"values": ["macos"]}},
+)
+platform_probe(name = "buildscript_linux", platform = {"linux-arm64": {}}, buildscript = True)
+platform_probe(name = "buildscript_macos", platform = {"macos-arm64": {}}, buildscript = True)
+
+cargo.rust_library(name = "darwin_library", platform = {"macos-arm64": {}})
+cargo.rust_binary(name = "darwin_binary", platform = {"macos-arm64": {}})
+cargo.rust_binary(name = "darwin_buildscript", crate = "build_script_build", platform = {"macos-arm64": {}})
+buildscript_run(
+    name = "darwin_buildscript_run",
+    buildscript_rule = ":darwin_buildscript",
+    package_name = "darwin",
+    version = "0.1.0",
+    platform = {"macos-arm64": {}},
+)
