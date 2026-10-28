@@ -31,6 +31,65 @@ async def _values(buck: Buck, package: str) -> dict[str, str]:
 
 
 class PreludeRulesTest(BuckTestCase):
+    @buck_test(inplace=False)
+    async def test_cargo_platform_compatibility(self, buck: Buck) -> None:
+        targets = (
+            "set("
+            + " ".join(
+                f"root//cargo_package:{name}"
+                for name in (
+                    "linux_only",
+                    "macos_only",
+                    "empty",
+                    "universal_constraint",
+                    "platform_constraint",
+                    "merged",
+                )
+            )
+            + ")"
+        )
+        for platform, expected in (
+            ("linux", {"linux_only", "empty", "merged"}),
+            ("macos", {"macos_only", "empty", "merged"}),
+            ("unknown", {"empty"}),
+        ):
+            result = await buck.cquery(
+                targets,
+                "--target-platforms",
+                f"root//cargo_package:{platform}",
+                "--output-attribute",
+                "values",
+            )
+            configured = {
+                target.split(":")[1].split(" ")[0]: attrs["values"]
+                for target, attrs in json.loads(result.stdout).items()
+            }
+            assert set(configured) == expected, configured
+            if "merged" in configured:
+                assert configured["merged"] == ["universal", platform]
+
+    @buck_test(inplace=False)
+    async def test_cargo_buildscript_uses_target_platform(self, buck: Buck) -> None:
+        result = await buck.cquery(
+            "set(root//cargo_package:buildscript_linux root//cargo_package:buildscript_macos "
+            "root//cargo_package:darwin_buildscript)",
+            "--target-platforms",
+            "root//cargo_package:macos_for_linux",
+        )
+        assert "cargo_package:buildscript_linux " in result.stdout
+        assert "cargo_package:buildscript_macos " not in result.stdout
+        assert "cargo_package:darwin_buildscript " not in result.stdout
+
+    @buck_test(inplace=False)
+    async def test_cargo_rules_skip_unsupported_platforms(self, buck: Buck) -> None:
+        result = await buck.cquery(
+            "set(root//cargo_package:darwin_library root//cargo_package:darwin_binary "
+            "root//cargo_package:darwin_buildscript root//cargo_package:darwin_buildscript_run)",
+            "--target-platforms",
+            "root//cargo_package:linux",
+        )
+        assert not result.stdout.strip(), result.stdout
+
     # prelude/apple/apple_bundle_destination.bzl `bundle_relative_path_for_destination`
     @buck_test(inplace=False)
     async def test_extensionkit_extensions_destination(self, buck: Buck) -> None:

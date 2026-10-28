@@ -11,6 +11,9 @@ This file exports utilities for building third-party code with reindeer.
 These are not used anywhere else in prelude and are not exported as prelude globals.
 
 These should not be used for first-party code where lints are desired.
+
+Nonempty platform maps restrict target compatibility. Generate complete maps with
+Reindeer's `buck.platform_compatibility_on_all_targets = true` setting.
 """
 
 load("@prelude//:prelude.bzl", "native")
@@ -115,6 +118,12 @@ def apply_platform_attrs(platform_attrs, universal_attrs, platform_select = None
             combined_attrs[attr] = combined_attrs[attr] + conditional_value
         else:
             combined_attrs[attr] = conditional_value
+
+    if platform_attrs:
+        combined_attrs["target_compatible_with"] = combined_attrs.get("target_compatible_with", []) + selects.apply(
+            platform_select,
+            lambda platform: [] if platform in platform_attrs else ["prelude//:none"],
+        )
 
     return combined_attrs
 
